@@ -105,8 +105,11 @@ class DiffSortedSet(object):
         else:
             for member, score in members.items():
                 _members += [member, score]
-
-        return self.db.zadd(self.key, *_members)
+        result = self.db.zadd(self.key, *_members)
+        max_element_age = diffs_settings['max_element_age']
+        if isinstance(max_element_age, int):
+            self.db.expire(self.key, max_element_age)
+        return result
 
     def zrange(self, start, stop, withscores=False):
         return self._process_response(self.db.zrange(self.key, start, stop, withscores=withscores))
